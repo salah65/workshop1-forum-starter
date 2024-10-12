@@ -1,5 +1,5 @@
 import './App.scss';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import dayjs from 'dayjs';
 import avatar from './images/bozai.png';
@@ -26,29 +26,6 @@ const user = {
 };
 
 // Initial default list of replies
-const defaultList: Reply[] = [
-    {
-        rpid: "3",
-        user: {uid: '13258165', avatar: '', uname: 'Jay Zhou'},
-        content: 'Nice, well done',
-        ctime: '10-18-2023 08:15',
-        like: 100
-    },
-    {
-        rpid: "2",
-        user: {uid: '36080105', avatar: '', uname: 'Song Xu'},
-        content: 'I search for you thousands of times, from dawn till dusk.',
-        ctime: '11-13-2023 11:29',
-        like: 88
-    },
-    {
-        rpid: "1",
-        user: {uid: '30009257', avatar, uname: 'John'},
-        content: 'I told my computer I needed a break... now it will not stop sending me vacation ads.',
-        ctime: '10-19-2023 09:00',
-        like: 66
-    },
-];
 
 // NavBar component
 const NavBar = ({total_reply, activeTab, setActiveTab}: {
@@ -156,9 +133,23 @@ const CommentSection = ({addNewReply}: { addNewReply: (reply: string) => void })
 // App component
 const App = () => {
     // Keep the defaultList as the initial value for replies
-    const [replies, setReplies] = useState<Reply[]>(defaultList);
+    const [replies, setReplies] = useState<Reply[]>([]);
     // State to track the active tab ('hot' for likes, 'newest' for time)
     const [activeTab, setActiveTab] = useState<string>('hot');
+
+    useEffect(()=>{
+        const fetchReplies = async () => {
+            try {
+                const response = await fetch('http://localhost:3004/replies');
+                const data: Reply[] = await response.json();
+                setReplies(data)
+
+            } catch (error) {
+                console.error('Error fetching replies:', error);
+            }
+        };
+        fetchReplies();
+    }, []);
 
     const addNewReply = (reply: string) => {
         const newReply: Reply = {
